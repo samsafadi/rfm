@@ -42,7 +42,6 @@ impl<T> ListState<T> {
         if self.selected.unwrap() < self.items.len() - 1  {
             self.selected = Some(self.selected.unwrap() + 1);
         }
-        
     }
 }
 
@@ -57,6 +56,19 @@ impl<'a> App<'a> {
         let paths: Vec <_> = fs::read_dir(&dir).unwrap().map(|res| res.unwrap().file_name().into_string().unwrap()).collect();
         let ls = ListState::new(paths);
         App { dir: dir, contents: ls }
+    }
+
+    fn previous_dir(&mut self) {
+        self.dir.pop();
+        let paths: Vec <_> = fs::read_dir(&self.dir).unwrap().map(|res| res.unwrap().file_name().into_string().unwrap()).collect();
+        self.contents.items = paths;
+    }
+
+    fn next_dir(&mut self, path: &path::PathBuf) {
+        self.dir.push(path);
+        let paths: Vec <_> = fs::read_dir(&self.dir).unwrap().map(|res| res.unwrap().file_name().into_string().unwrap()).collect();
+        self.contents.items = paths;
+
     }
 }
 
@@ -87,7 +99,7 @@ fn main() -> Result<(), failure::Error> {
                 let style = Style::default();
 
                 SelectableList::default()
-                    .block(Block::default().borders(Borders::ALL).title("rfm"))
+                    .block(Block::default().borders(Borders::ALL).title(&app.dir.to_str().unwrap()))
                     .select(app.contents.selected)
                     .items(&app.contents.items)
                     .style(style)
@@ -103,11 +115,22 @@ fn main() -> Result<(), failure::Error> {
                     Key::Char('j') => {
                         app.contents.select_next();
                     }
-                    Key ::Char('k') => {
+                    Key::Char('k') => {
                         app.contents.select_previous();
                     }
+                    Key::Char('l') => {
+                        let dir = path::PathBuf::from(&app.contents.items[app.contents.selected.unwrap()]).metadata();
+                        println!("{:}", dir.unwrap().is_dir())
+                        /*if md.is_dir() {
+                            let p = path::PathBuf::from(&app.contents.items[app.contents.selected.unwrap()]);
+                            app.next_dir(&p);
+                        }*/
+                    }
+                    Key::Char('h') => {
+                        app.previous_dir();
+                    }
                     _ => {}
-                }   
+                }
             }
         } 
     Ok(())
