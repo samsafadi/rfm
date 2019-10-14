@@ -119,12 +119,20 @@ fn main() -> Result<(), failure::Error> {
                         app.contents.select_previous();
                     }
                     Key::Char('l') => {
-                        let dir = path::PathBuf::from(&app.contents.items[app.contents.selected.unwrap()]).metadata();
-                        println!("{:}", dir.unwrap().is_dir())
-                        /*if md.is_dir() {
-                            let p = path::PathBuf::from(&app.contents.items[app.contents.selected.unwrap()]);
-                            app.next_dir(&p);
-                        }*/
+                        match app.contents.selected {
+                            Some(ref p) => {
+                                if p >= &app.contents.items.len() { continue; }
+                                let mut full_path: path::PathBuf = app.dir.clone();
+                                full_path.push(&app.contents.items[app.contents.selected.unwrap()]);
+                                let dir_metadata = path::PathBuf::from(&full_path).metadata()?;
+                                
+                                if dir_metadata.is_dir() {
+                                    app.next_dir(&full_path);
+                                }
+                            }
+                            None => println!("yeet")
+                            
+                        }
                     }
                     Key::Char('h') => {
                         app.previous_dir();
