@@ -117,6 +117,9 @@ fn main() -> Result<(), failure::Error> {
                     }
                     Key::Char('k') => {
                         app.contents.select_previous();
+                        if app.contents.selected.unwrap() >  app.contents.items.len() {
+                            app.contents.selected = Some(app.contents.items.len() - 1);
+                        }
                     }
                     Key::Char('l') => {
                         match app.contents.selected {
@@ -129,8 +132,11 @@ fn main() -> Result<(), failure::Error> {
                                 if dir_metadata.is_dir() {
                                     app.next_dir(&full_path);
                                 }
+                                if app.contents.selected.unwrap() >  app.contents.items.len() {
+                                    app.contents.selected = Some(app.contents.items.len() - 1);
+                                }
                             }
-                            None => println!("yeet")
+                            None => {}
                             
                         }
                     }
